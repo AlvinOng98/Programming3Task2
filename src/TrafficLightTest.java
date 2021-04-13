@@ -1,34 +1,34 @@
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-class TrafficLightTest {
+class TrafficLightTest extends Car {
     Road road = new Road("0", 1, 5, new int[]{0, 0});
     TrafficLight light = new TrafficLight("0", road);
-
     @Test
-    void testOperate() {
-        light.operate(3515);
-        assertEquals("green", light.getState());
+    void testGetId() {
+        assertEquals("0", light.getId());
     }
 
     @Test
     void getState() {
-        assertEquals("red", light.getState());
+        assertEquals("RED", light.getState());
     }
 
     @Test
-    void getRoad() {
-        assertEquals(road, light.getRoadAttachedTo());
+    void testGetPosition() {
+        int[] expected = {5,0};
+        assertArrayEquals(expected, light.getPosition());
     }
 
     @Test
-    void getPosition() {
-        assertEquals(5, light.getPosition());
+    void getRoadBelongTo() {
+        assertEquals(road, light.getRoadBelongTo());
     }
 
     @Test
-    void getId() {
-        assertEquals("light_0", light.getId());
+    void operate() {
+        light.operate();
+        assertEquals("RED", light.getState());
     }
 }

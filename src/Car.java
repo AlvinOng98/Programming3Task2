@@ -1,55 +1,44 @@
 public class Car {
-    private static final int STOPPED = 0; //car speed is 0m/s
-    private static final int NEXT_ROAD_INDEX = 0;
-    private static final int START_POSITION = 1;
-    String id; // unique identifier
-    static float length; // number of segments occupied, 1 for ease of prototype.
-    private static float breadth;
-    private int speed; //segments moved per turn
-    private int position; // position on current road
-    private Road currentRoad; // current Road object
+    public final int MIN_GAS_LEVEL = 0;
+    public final int MIN_SPEED_LEVEL = 0;
+    private final int NEXT_ROAD_INDEX = 0;
+    private final int START_POSITION = 0;
+    //Attributes
+    protected float breadth;
+    protected float length;
+    protected String id;
+    protected int speed;
+    protected int position;
+    protected int gasLevel;
+    protected Road currentRoad = new Road();
 
-
+    //Constructors
     public Car(String id, Road currentRoad) {
-        this.id = "car_" + id;
+        this.id = id;
         this.currentRoad = currentRoad;
-        length = 1f; // cars made 1m long for prototype.
+        length = 1f;
         breadth = length * 0.5f;
         speed = 0;
-        position = 1;
-        this.currentRoad.getCarsOnRoad().add(this); //add this car to the road its on.
+        position = 0;
+        gasLevel = this.currentRoad.getLength(); // set gas Level equals to road length
     }
 
     public Car() {
-        id = "000";
+        id = "0";
         length = 1f;
         breadth = length * 0.5f;
         speed = 0;
         position = 1;
+        gasLevel = this.currentRoad.getLength();
     }
 
-    public void move() {
-        this.speed = this.currentRoad.getSpeedLimit(); //set speed limit to that of currentRoad
-        if (!this.currentRoad.getLightsOnRoad().isEmpty() && this.position == this.currentRoad.getLightsOnRoad().get(0).getPosition() && this.currentRoad.getLightsOnRoad().get(0).getState().equals("red")) {
-            this.speed = STOPPED;
-        } else {
-            this.speed = this.currentRoad.getSpeedLimit();
-            if (this.currentRoad.getLength() == this.getPosition() && !this.currentRoad.getConnectedRoads().isEmpty()) {
-                this.currentRoad.getCarsOnRoad().remove(this);
-                this.currentRoad = this.currentRoad.getConnectedRoads().get(NEXT_ROAD_INDEX);
-                this.currentRoad.getCarsOnRoad().add(this);
-                this.position = START_POSITION;
-            } else if (this.currentRoad.getLength() > this.getPosition()) {
-                this.position = (this.position + this.speed);
-            } else {
-                this.speed = STOPPED;
-            }
-        }
+    //Get set methods
+    public int getGasLevel() {
+        return gasLevel;
     }
 
-    public void printCarStatus() {
-        System.out.printf("%s going:%dm/s on %s at position:%s%n", this.getId(), this.getSpeed(), this.getCurrentRoad().
-                getId(), this.getPosition());
+    public void setGasLevel(int gasLevel) {
+        this.gasLevel = gasLevel;
     }
 
     public float getLength() {
@@ -57,7 +46,7 @@ public class Car {
     }
 
     public void setLength(float length) {
-        Car.length = length;
+        this.length = length;
     }
 
     public float getBreadth() {
@@ -65,7 +54,15 @@ public class Car {
     }
 
     public void setBreadth(float breadth) {
-        Car.breadth = breadth;
+        this.breadth = breadth;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getSpeed() {
@@ -92,13 +89,48 @@ public class Car {
         this.currentRoad = currentRoad;
     }
 
-    public String getId() {
-        return id;
+
+    //Input output methods
+    public void showOutPut() {
+        System.out.println("Car " + this.id + " Gas Level: " + this.gasLevel + " going: " + this.speed + "m/s on road "
+                + this.currentRoad.getId() + " at position " + this.position);
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    //Business methods
+    public void move() {
+        this.speed = this.currentRoad.getSpeedLimit();
+        if (!this.currentRoad.getLigthsOnRoad().isEmpty() && !this.currentRoad.getGasStationList().isEmpty() && !this.currentRoad.getSignsOnRoad().isEmpty()) {
+            if (this.position == this.currentRoad.getLigthsOnRoad().get(0).getPosition()[0] && this.position == this.currentRoad.getGasStationList().get(0).getPosition()[0]
+            && this.position == this.currentRoad.getSignsOnRoad().get(0).getPosition()[0]) {
+                if (this.currentRoad.getLigthsOnRoad().get(0).getState().equals("RED")) {
+                    this.speed = MIN_SPEED_LEVEL;
 
+                }
+                if (this.currentRoad.getSignsOnRoad().get(0).getState().equals("STOP SIGN")){
+                    this.speed = MIN_SPEED_LEVEL;
+                }
+                else {
+                    Road nextRoad = this.currentRoad.getConnectedRoads().get(NEXT_ROAD_INDEX);
+                    this.gasLevel = this.currentRoad.getGasStationList().get(0).reFillGas(this.gasLevel, nextRoad); // only move to next road when gas is refilled
+                    if (this.gasLevel > MIN_GAS_LEVEL) {
+                        this.currentRoad.getCarsOnRoad().remove(this);
+                        this.currentRoad = nextRoad;
+                        this.currentRoad.getCarsOnRoad().add(this);
+                        this.position = START_POSITION;
+                    } else {
+                        this.speed = MIN_SPEED_LEVEL;
+                    }
+                }
+            }
+        }
+        if (this.currentRoad.getLength() > this.getPosition() && this.gasLevel > MIN_GAS_LEVEL) {
+            this.position += this.speed;
+            this.gasLevel -= this.speed;
+        } else if (this.currentRoad.getLength() < this.getPosition() || this.gasLevel <= MIN_GAS_LEVEL) {
+            this.speed = MIN_SPEED_LEVEL;
+        } else {
+            this.speed = MIN_SPEED_LEVEL;
+        }
+
+    }
 }
-

@@ -1,34 +1,22 @@
 import java.util.Random;
 
 public class TrafficLight {
-    private static final double CHANGE_GREEN = 0.5; // 50/50 chance of changing state.
-    private static final String GREEN = "green";
-    private static final String RED = "red";
+    //Attributes
+    private static final String GREEN = "GREEN";
+    private static final String RED = "RED";
+    private final double CHANGE_GREEN_RATE = 50;
     private String id;
     private String state;
-    private int position;
-    private Road roadAttachedTo;
+    private int[] position;
+    private Road roadBelongTo;
 
-    public TrafficLight(String id, Road road) {
-        this.id = "light_" + id;
-        state = RED;
-        this.roadAttachedTo = road;
-        position = this.roadAttachedTo.getLength(); // always places the traffic light at the end of the roadAttachedTo.
-        this.roadAttachedTo.getLightsOnRoad().add(this); // adds this light to the road it belongs to.
+    //Get set methods
+    public String getId() {
+        return id;
     }
 
-    public void operate(int seed) {
-        Random random = new Random(seed);
-        double probability = random.nextDouble();
-        if (probability > CHANGE_GREEN) {
-            this.setState(GREEN);
-        } else {
-            this.setState(RED);
-        }
-    }
-
-    public void printLightStatus() {
-        System.out.printf("%s is:%s on %s at position:%s%n", this.getId(), this.getState(), this.getRoadAttachedTo().getId(), this.getPosition());
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getState() {
@@ -39,27 +27,49 @@ public class TrafficLight {
         this.state = state;
     }
 
-    public Road getRoadAttachedTo() {
-        return roadAttachedTo;
-    }
-
-    public void setRoadAttachedTo(Road roadAttachedTo) {
-        this.roadAttachedTo = roadAttachedTo;
-    }
-
-    public int getPosition() {
+    public int[] getPosition() {
         return position;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setPosition(int position) {
+    public void setPosition(int[] position) {
         this.position = position;
+    }
+
+    public Road getRoadBelongTo() {
+        return roadBelongTo;
+    }
+
+    public void setRoadBelongTo(Road roadBelongTo) {
+        this.roadBelongTo = roadBelongTo;
+    }
+
+    //Constructors
+    public TrafficLight(String id, Road roadBelongTo) {
+        this.id = id;
+        this.roadBelongTo = roadBelongTo;
+        state = RED;
+        this.roadBelongTo.getLigthsOnRoad().add(this);
+        position = new int[]{this.roadBelongTo.getLength(), 0};
+    }
+
+    public TrafficLight() {
+
+    }
+
+    //Input output methods
+    public void showLightInfo() {
+        System.out.printf("Light %s on road %s is : %s at position %s%n",
+                this.id, this.roadBelongTo.getId(), this.state, (this.position[0] + "," + this.position[1]));
+    }
+
+    //Business methods
+    public void operate() {
+        Random rd = new Random();
+        int possibility = rd.nextInt(100);
+        if (possibility > CHANGE_GREEN_RATE) {
+            this.state = "GREEN";
+        } else {
+            this.state = "RED";
+        }
     }
 }
