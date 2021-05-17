@@ -11,7 +11,7 @@ public class MotorBike extends  Car{
         g.fillRect(xPos, yPos, width, height);
     }
     public void paintMeVertical(Graphics g){
-        g.setColor(Color.GREEN);
+        g.setColor(Color.PINK);
         g.fillRect(yPos, xPos, height, width);
     }}
 
