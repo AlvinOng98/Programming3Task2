@@ -1,126 +1,195 @@
-import java.util.ArrayList;
+import javax.swing.*;
+import java.awt.*;
+import java.util.Random;
 
-public class Road {
-    //Attributes
-    private String id;
-    private int speedLimit;
-    private int length;
-    private int[] startLocation;
-    private int[] endLocation;
-    private ArrayList<Road> connectedRoads = new ArrayList<>();
-    private ArrayList<Car> carsOnRoad = new ArrayList<>();
-    private ArrayList<TrafficLight> ligthsOnRoad = new ArrayList<>();
-    private ArrayList<TrafficSign> signsOnRoad = new ArrayList<>();
-    private ArrayList<GasStation> gasStationList = new ArrayList<>();
+public class Road extends JPanel{
+    private TrafficLight light;
+    private SpeedSign sign;
+    private int numOfSegments; //length of road
+    private final int roadWidth = 50;
+    final int roadYPos;
+    final int endRoadYPos;
+    final int roadXPos;
+    final int endRoadXPos;
+    private Color lightColor = Color.green;
+    private Color signColor = Color.green;
+    private String orientation;
+    String trafficDirection;
 
-    //Constructors
-    public Road(String id, int speedLimit, int length, int[] startLocation) {
-        this.id = id;
-        this.speedLimit = speedLimit;
-        this.length = length;
-        this.startLocation = startLocation;
-        this.endLocation = new int[]{this.startLocation[0] + this.length, 0};
+
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 0, 1200, 1200);
+
+        for(int z = 0; z < Map.roads.size();z++){
+            Road r = Map.roads.get(z);
+            r.paintRoad(g);
+            if(r.getOrientation().equals("vertical")){
+                for (int c = 0; c < Map.cars.size(); c++) {
+                    Car car = Map.cars.get(c);
+                    if(car.getRoadCarIsOn().equals(r)) {
+                        car.paintMeVertical(g);
+                    }
+                }
+                if (r.getTrafficLight() != null) {
+                    r.paintLight(g);
+                }
+                if (r.getSign() != null) {
+                    r.paintSign(g);
+                }
+            }
+            else{
+                for (int c = 0; c < Map.cars.size(); c++) {
+                    Car car = Map.cars.get(c);
+                    if(car.getRoadCarIsOn().equals(r)) {
+                        car.paintMeHorizontal(g);
+                    }
+                }
+                if (r.getTrafficLight() != null) {
+                    r.paintLight(g);
+                }
+                if (r.getSign() != null) {
+                    r.paintSign(g);
+                }
+            }
+        }
     }
 
-    public Road() {
-
+    // paints traffic light
+    public void paintLight(Graphics g){
+        g.setColor(lightColor);
+        if(getOrientation().equals("horizontal")) {
+            if (getTrafficDirection().equals("east")) {
+                g.fillRect(roadXPos + numOfSegments * 25 - 10, roadYPos - 20, 10, 20);
+                g.setColor(Color.black);
+                g.drawRect(roadXPos + numOfSegments * 25 - 10, roadYPos - 20, 10, 20);
+            } else {
+                g.fillRect(roadXPos, roadYPos - 20, 10, 20);
+                g.setColor(Color.black);
+                g.drawRect(roadXPos, roadYPos - 20, 10, 20);
+            }
+        }
+        else{
+            if (getTrafficDirection().equals("south")) {
+                g.fillRect(roadYPos - 20, roadXPos + numOfSegments * 25 - 10, 20, 10);
+                g.setColor(Color.black);
+                g.drawRect(roadYPos - 20, roadXPos + numOfSegments * 25 - 10, 20, 10);
+            }
+            else{
+                g.fillRect(roadYPos - 20, roadXPos, 20, 10);
+                g.setColor(Color.black);
+                g.drawRect(roadYPos - 20, roadXPos, 20, 10);
+            }
+        }
+    }
+    //paint Speed up Sign
+    public void paintSign(Graphics g){
+        g.setColor(signColor);
+        if(getOrientation().equals("horizontal")) {
+            if (getTrafficDirection().equals("east")) {
+                g.fillOval(roadXPos + numOfSegments * 25 - 10 - 50, roadYPos - 20, 20, 20);
+                g.setColor(Color.black);
+                g.drawOval(roadXPos + numOfSegments * 25 - 10 - 50, roadYPos - 20, 20, 20);
+            } else {
+                g.fillOval(roadXPos + 50, roadYPos - 20, 20, 20);
+                g.setColor(Color.black);
+                g.drawOval(roadXPos + 50, roadYPos - 20, 20, 20);
+            }
+        }
+        else{
+            if (getTrafficDirection().equals("south")) {
+                g.fillOval(roadYPos - 20, roadXPos + numOfSegments * 25 - 10 - 50, 20, 20);
+                g.setColor(Color.black);
+                g.drawOval(roadYPos - 20, roadXPos + numOfSegments * 25 - 10 - 50, 20, 20);
+            }
+            else{
+                g.fillOval(roadYPos - 20, roadXPos + 40, 20, 10);
+                g.setColor(Color.black);
+                g.drawOval(roadYPos - 20, roadXPos + 40, 20, 10);
+            }
+        }
     }
 
-    //Get set methods
-
-    public ArrayList<GasStation> getGasStationList() {
-        return gasStationList;
-    }
-    public ArrayList<TrafficSign> getSignsOnRoad(){
-        return signsOnRoad;
-    }
-    public void setSignsOnRoad(ArrayList<TrafficSign> signsOnRoad){
-        this.signsOnRoad = signsOnRoad;
-    }
-
-    public void setGasStationList(ArrayList<GasStation> gasStationList) {
-        this.gasStationList = gasStationList;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public void paintRoad(Graphics g){
+        if(orientation.equals("horizontal")) {
+            g.setColor(Color.black);
+            g.fillRect(roadXPos, roadYPos,numOfSegments * 25, roadWidth);
+            g.setColor(Color.WHITE);
+            for (int j = 0; j < numOfSegments * 25; j = j + 50) { // line being drawn
+                g.fillRect(roadXPos + j, roadYPos + roadWidth / 2, 30, 2);
+            }
+        }
+        else{
+            g.setColor(Color.black);
+            g.fillRect(roadYPos, roadXPos, roadWidth, numOfSegments * 25);
+            g.setColor(Color.WHITE);
+            for (int j = 0; j < numOfSegments * 25; j = j + 50) { // line being drawn
+                g.fillRect( roadYPos + roadWidth / 2, roadXPos + j, 2,30);
+            }
+        }
     }
 
-    public int getSpeedLimit() {
-        return speedLimit;
+    Road(int numOfSegments, String orientation, int xPos, int yPos, String direction){
+        super();
+        this.numOfSegments = numOfSegments*2;
+        this.orientation = orientation;
+        this.roadXPos = xPos;
+        this.roadYPos = yPos;
+        this.endRoadXPos = xPos + numOfSegments * 50;
+        this.endRoadYPos = yPos + numOfSegments * 50;
+        this.trafficDirection = direction;
     }
+    Road(int numOfSegments, String orientation, int xPos, int yPos, String direction, TrafficLight light, SpeedSign sign){
+        super();
+        this.numOfSegments = numOfSegments*2;
+        this.orientation = orientation;
+        this.light = light;
+        this.sign = sign;
+        this.roadXPos = xPos;
+        this.roadYPos = yPos;
+        this.endRoadXPos = xPos + numOfSegments * 50;
+        this.endRoadYPos = yPos + numOfSegments * 50;
+        this.trafficDirection = direction;
 
-    public void setSpeedLimit(int speedLimit) {
-        this.speedLimit = speedLimit;
     }
+    Road(int numOfSegments, String orientation, int xPos, int yPos, String direction, TrafficLight light){
+        super();
+        this.numOfSegments = numOfSegments*2;
+        this.orientation = orientation;
+        this.light = light;
+        this.roadXPos = xPos;
+        this.roadYPos = yPos;
+        this.endRoadXPos = xPos + numOfSegments * 50;
+        this.endRoadYPos = yPos + numOfSegments * 50;
+        this.trafficDirection = direction;
 
-    public int getLength() {
-        return length;
     }
-
-    public void setLength(int length) {
-        this.length = length;
+    public String getOrientation(){ return orientation;}
+    public TrafficLight getTrafficLight(){
+        return light;
     }
-
-    public int[] getStartLocation() {
-        return startLocation;
+    public SpeedSign getSign() {return sign;}
+    public int getRoadLength(){
+        return numOfSegments;
     }
-
-    public void setStartLocation(int[] startLocation) {
-        this.startLocation = startLocation;
+    public int getRoadYPos(){
+        return roadYPos;
     }
-
-    public int[] getEndLocation() {
-        return endLocation;
+    public int getRoadXPos(){
+        return roadXPos;
     }
-
-    public void setEndLocation(int[] endLocation) {
-        this.endLocation = endLocation;
+    public int getEndRoadYPos(){
+        return endRoadYPos;
     }
-
-    public ArrayList<Road> getConnectedRoads() {
-        return connectedRoads;
+    public int getEndRoadXPos(){
+        return endRoadXPos;
     }
-
-    public void setConnectedRoads(ArrayList<Road> connectedRoads) {
-        this.connectedRoads = connectedRoads;
+    public String getTrafficDirection(){ return trafficDirection; }
+    public void setLightColor(Color c){
+        lightColor = c;
     }
-
-    public ArrayList<Car> getCarsOnRoad() {
-        return carsOnRoad;
-    }
-
-    public void setCarsOnRoad(ArrayList<Car> carsOnRoad) {
-        this.carsOnRoad = carsOnRoad;
-    }
-
-    public ArrayList<TrafficLight> getLigthsOnRoad() {
-        return ligthsOnRoad;
-    }
-
-    public void setLigthsOnRoad(ArrayList<TrafficLight> ligthsOnRoad) {
-        this.ligthsOnRoad = ligthsOnRoad;
-    }
-
-    //Input output methods
-    public void showStartLocation() {
-        System.out.println("Start Location is: " + startLocation[0] + "," + startLocation[1]);
-    }
-
-    public void showEndLocation() {
-        System.out.println("End Location is: " + endLocation[0] + "," + endLocation[1]);
-    }
-
-    public void showRoadInfo() {
-        System.out.printf("Road ID: %s - Speed limit: %dm/s - Length: %d%n"
-                , this.id, this.speedLimit, this.length);
-        showStartLocation();
-        showEndLocation();
-    }
-    //Business methods
+    public void setSignColor(Color c){signColor = c;}
 
 }
+
